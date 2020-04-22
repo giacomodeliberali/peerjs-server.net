@@ -98,6 +98,7 @@ namespace PeerJs
         {
             return message.Type switch
             {
+                MessageType.IsAvilable => SendAvailablity(client, message),
                 MessageType.Open => AcceptAsync(client, cancellationToken),
                 MessageType.Heartbeat => HeartbeatAsync(client),
                 MessageType.Offer => TransferAsync(client, message, cancellationToken),
@@ -107,6 +108,20 @@ namespace PeerJs
                 MessageType.Leave => LeaveAsync(client, message, cancellationToken),
                 _ => throw new NotImplementedException(),
             };
+        }
+
+        private Task SendAvailablity(IClient client, Message message)
+        {
+            var destinationClient = GetClient(message.Destination);
+            client.SendAsync(new Message
+            {
+                Type = MessageType.IsAvilable,
+                Payload = new
+                {
+                   isAvailable = destinationClient != null
+                }
+            });
+            return Task.CompletedTask;
         }
 
         private Task AcceptAsync(IClient client, CancellationToken cancellationToken = default)
